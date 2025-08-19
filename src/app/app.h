@@ -1,35 +1,27 @@
 #pragma once
 
-#include <QMainWindow>
 #include <QDateTime>
-#include <QStandardPaths>
 #include <QDir>
 #include <QFile>
+#include <QMainWindow>
+#include <QStandardPaths>
 #include <QTextStream>
 
-
-
+// Предварительное объявление класса, который будет сгенерирован из app.ui
 namespace Ui {
-    class App;
+class App;
 }
 
-
-
-class App : public QMainWindow {
+class MainWindowImpl : public QMainWindow {
     Q_OBJECT
 
    public:
-    explicit App(QWidget *parent = nullptr);
-    ~App();
+    explicit MainWindowImpl(QWidget *parent = nullptr);
+    ~MainWindowImpl();
 
-
-    private:
+   private:
     Ui::App *ui;
 
-
-
-    private slots:
+   private slots:
     void init();
-   
-
 };

@@ -33,48 +33,41 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
                               .arg(level)
                               .arg(msg);
 
-                              static QString logPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/log";
+        static QString logPath =
+            QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/log";
 
-                              QDir().mkdir(logPath);
+        QDir().mkdir(logPath);
 
-                              QFile logFile(logPath + "artm1904.log");
+        QFile logFile(logPath + "artm1904.log");
 
-                              QIODevice::OpenMode openMode;
+        QIODevice::OpenMode openMode;
 
-                              if (logFile.size() > (1L <<20)) {
-                                  openMode = QIODevice::WriteOnly | QIODevice::Truncate;
-                              } else {
-                                  openMode = QIODevice::WriteOnly | QIODevice::Append;
-                              }
+        if (logFile.size() > (1L << 20)) {
+            openMode = QIODevice::WriteOnly | QIODevice::Truncate;
+        } else {
+            openMode = QIODevice::WriteOnly | QIODevice::Append;
+        }
 
-                              if (logFile.open(openMode)){
-                                  QTextStream stream(&logFile);
-                                  stream << message << "\n";
-                                  logFile.close();
-                              }                              
-
+        if (logFile.open(openMode)) {
+            QTextStream stream(&logFile);
+            stream << message << "\n";
+            logFile.close();
+        }
     }
 }
 
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
 
+    qApp->setApplicationName("artm1904");
+    qApp->setApplicationDisplayName("artm1904");
+    qApp->setApplicationVersion("0.0.1");
+    qApp->setWindowIcon(QIcon(":/static/logo.png"));
 
-int main (int argc, char *argv[]){
+    qInstallMessageHandler(messageHandler);
 
-  QApplication app (argc, argv);
+    MainWindowImpl w;
+    w.show();
 
-
-  qApp->setApplicationName("artm1904");
-  qApp->setApplicationDisplayName("artm1904");
-  qApp->setApplicationVersion("0.0.1");
-  qApp->setWindowIcon(QIcon(":/static/logo.png"));
-
-  qInstallMessageHandler(messageHandler);
-
-  App w; 
-  w.show();
-
-  return app.exec();
-
-
-
+    return app.exec();
 }
