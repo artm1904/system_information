@@ -1,6 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
 project(system_infoQt VERSION 0.1.0 LANGUAGES CXX)
 
+set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contrib)
+
+include(cmake/cpm.cmake)
+
+CPMAddPackage(
+    NAME GOOGLETEST
+    GITHUB_REPOSITORY google/googletest
+    VERSION 1.16.0
+    SOURCE_DIR ${LIB_DIR}/googletest
+    OPTIONS 
+        "INSTALL_GTEST OFF"
+        "gtest_force_shared_crt ON"
+)
+
+
+
 # Создаем INTERFACE библиотеку для хранения общих настроек компиляции
 add_library(project_options INTERFACE)
 
@@ -25,3 +41,4 @@ target_compile_options(project_options INTERFACE
 )
 
 add_subdirectory(src)
+add_subdirectory(tests)
