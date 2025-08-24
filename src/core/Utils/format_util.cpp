@@ -8,7 +8,7 @@ constexpr quint64 GIBI = 1ULL << 30;
 constexpr quint64 TEBI = 1ULL << 40;
 }  // namespace
 
-QString FormatUtil::formatBytes(quint64 bytes) {
+QString FormatUtil::FormatBytes(quint64 bytes) {
     if (bytes < KIBI) return QStringLiteral("%1 B").arg(bytes);
     if (bytes < MEBI)
         return QStringLiteral("%1 KiB").arg(static_cast<double>(bytes) / KIBI, 0, 'f', 1);
