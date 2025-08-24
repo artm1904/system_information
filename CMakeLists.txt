@@ -14,7 +14,7 @@ CPMAddPackage(
         "INSTALL_GTEST OFF"
         "gtest_force_shared_crt ON"
 )
-
+enable_testing()
 
 
 # Создаем INTERFACE библиотеку для хранения общих настроек компиляции
