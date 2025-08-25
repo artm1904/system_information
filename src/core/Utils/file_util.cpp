@@ -4,7 +4,7 @@
 #include <QTextStream>
 
 QString FileUtil::ReadStringFromFile(const QString& path, QIODevice::OpenMode mode) {
-    QFile file{new QFile{path}};
+    QFile file{path};
 
     QString data;
 
@@ -26,9 +26,8 @@ QStringList FileUtil::ReadListFromFile(const QString& path, QIODevice::OpenMode 
             list << in.readLine();
         }
         file.close();
-
-        return list;
     }
+    return list;
 }
 
 bool FileUtil::WriteFile(const QString& path, const QString& data, QIODevice::OpenMode mode) {
