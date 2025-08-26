@@ -5,6 +5,7 @@
 #include <QTextStream>
 #include <iostream>
 
+#include "Utils/command_ulit.h"
 #include "Utils/file_util.h"
 #include "Utils/format_util.h"
 
@@ -107,24 +108,40 @@ TEST_F(FileUtilTest, DirectoryList) {
 
 TEST_F(FileUtilTest, GetFileSize) {
     QString path{"./test_dir_for_get_size"};
-    const QString content {"This is a test file"}; // 19 байт
+    const QString content{"This is a test file"};  // 19 байт
     QDir{}.mkdir(path);
 
     QFile file1{path + "/file1.txt"};
     file1.open(QIODevice::WriteOnly);
-    QTextStream stream1{&file1};  
+    QTextStream stream1{&file1};
     stream1 << content;
     file1.close();
 
     QFile file2{path + "/file2.txt"};
     file2.open(QIODevice::WriteOnly);
-    QTextStream stream2{&file2}; 
+    QTextStream stream2{&file2};
     stream2 << content;
     file2.close();
 
     quint64 result = FileUtil::GetFileSize(path);
     EXPECT_EQ(result, 38);
-    EXPECT_EQ(result, static_cast<quint64>(content.toUtf8().size() * 2)); // 19 * 2 = 38
+    EXPECT_EQ(result, static_cast<quint64>(content.toUtf8().size() * 2));  // 19 * 2 = 38
 
     QDir{path}.removeRecursively();
 }
+
+class CommandUtilTest : public ::testing::Test {};
+
+//TEST_F(CommandUtilTest, SudoExec) { QString result = CommandUtil::SudoExec("ls"); }
+
+TEST_F(CommandUtilTest, Exec) {
+    QString result = CommandUtil::Exec("ls");
+    EXPECT_FALSE(result.isEmpty());
+}
+
+TEST_F(CommandUtilTest, IsExecutable) {
+    EXPECT_TRUE(CommandUtil::IsExecutable("ls"));
+    EXPECT_FALSE(CommandUtil::IsExecutable("nonexistent_command"));
+}
+
+
