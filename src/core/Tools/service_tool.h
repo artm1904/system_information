@@ -2,8 +2,10 @@
 
 #include <QString>
 #include <iostream>
+#include <memory>
 
 #include "../Utils/command_ulit.h"
+#include "../Utils/i_command_executor.h"
 #include "../core_global.h"
 
 class Service {
@@ -28,14 +30,21 @@ std::ostream& operator<<(std::ostream& os, const Service& service) {
 
 class CORE_EXPORT ServiceTool {
    public:
-    ServiceTool() = default;
+    /**
+     * @brief Конструктор ServiceTool.
+     * @param commandExecutor Указатель на исполнителя команд.
+     */
+    explicit ServiceTool(CommandExecutorPtr commandExecutor)
+        : m_commandExecutor(commandExecutor) {};
+    ~ServiceTool() = default;
 
     QList<Service> GetServicesWithSystemctl();
 
     bool ServiceIsActive(const QString& serviceName);
+    bool ServiceIsEnable(const QString& serviceName);
     bool ChangeServiceStatus(const QString& serviceName, bool status);
     bool ChangeServiceActive(const QString& serviceName, bool active);
-    bool ServiceIsEnable(const QString& serviceName);
 
    private:
+    CommandExecutorPtr m_commandExecutor;
 };
