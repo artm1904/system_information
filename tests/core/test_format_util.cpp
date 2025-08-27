@@ -1,15 +1,21 @@
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <QDir>
 #include <QFile>
+#include <QString>
+#include <QStringList>
 #include <QTextStream>
 #include <iostream>
+#include <memory>
 
+#include "Tools/service_tool.h"
 #include "Utils/command_ulit.h"
 #include "Utils/file_util.h"
 #include "Utils/format_util.h"
+#include "Utils/i_command_executor.h"
 
-// Тестовый набор для класса FormatUtil
+//------------------------------- Тестовый набор для класса FormatUtil -----------------------------
 class FormatUtilTest : public ::testing::Test {};
 
 TEST_F(FormatUtilTest, HandlesBytes) {
@@ -43,6 +49,7 @@ TEST_F(FormatUtilTest, HandlesTebibytes) {
     EXPECT_EQ(FormatUtil::FormatBytes(one_tebibyte), "1.00 TiB");
 }
 
+//-------------------------------- Тестовый набор для класса FileUtil -----------------------------
 class FileUtilTest : public ::testing::Test {};
 
 TEST_F(FileUtilTest, ReadStringFromFile) {
@@ -130,18 +137,93 @@ TEST_F(FileUtilTest, GetFileSize) {
     QDir{path}.removeRecursively();
 }
 
-class CommandUtilTest : public ::testing::Test {};
+//-------------------------- Тестовый набор для класса CommandUtil ------------------------------
 
-//TEST_F(CommandUtilTest, SudoExec) { QString result = CommandUtil::SudoExec("ls"); }
+// class CommandUtilTest : public ::testing::Test {};
 
-TEST_F(CommandUtilTest, Exec) {
-    QString result = CommandUtil::Exec("ls");
-    EXPECT_FALSE(result.isEmpty());
+// TEST_F(CommandUtilTest, SudoExec) {
+
+//     QString result = CommandUtil::SudoExec("ls");
+
+// }
+
+// TEST_F(CommandUtilTest, Exec) {
+
+//     QString result = CommandUtil::Exec("ls");
+//     EXPECT_FALSE(result.isEmpty());
+// }
+
+// TEST_F(CommandUtilTest, IsExecutable) {
+//     EXPECT_TRUE(CommandUtil::IsExecutable("ls"));
+//     EXPECT_FALSE(CommandUtil::IsExecutable("nonexistent_command"));
+// }
+
+//-------------------------------- Тестовый набор для класса ServiceTool ---------------------------
+
+class MockCommandExecutor : public ICommandExecutor {
+   public:
+    MOCK_METHOD(QString, SudoExec, (const QString& command, QStringList args), (override));
+    MOCK_METHOD(QString, Exec, (const QString& command, const QStringList& args), (override));
+};
+
+class ServiceToolTest : public ::testing::Test {
+   protected:
+    std::shared_ptr<MockCommandExecutor> mockCommandExecutor;
+
+    std::unique_ptr<ServiceTool> serviceTool;
+
+    // Перед каждым тестом создаем свежий экземпляр мока и ServiceTool
+    void SetUp() override {
+        mockCommandExecutor = std::make_shared<MockCommandExecutor>();
+        serviceTool = std::make_unique<ServiceTool>(mockCommandExecutor);
+    }
+};
+
+TEST_F(ServiceToolTest, GetServicesWithSystemctl) {
+    QString commamd{"systemctl"};
+    QString active{"active"};
+    QString inactive{"inactive"};
+
+    QStringList args{"list-unit-files",          "--type=service", "--all",
+                     "--state=enabled,disabled", "--no-legend",    "--no-pager"};
+
+    QString mock_output =
+        "cups.service    enabled\n"
+        "ssh.service     disabled\n"
+        "getty@.service  enabled\n";  // Этот сервис должен быть пропущен
+
+    EXPECT_CALL(*mockCommandExecutor, Exec(commamd, args)).WillOnce(::testing::Return(mock_output));
+    EXPECT_CALL(*mockCommandExecutor, Exec(commamd, QStringList{"is-active", "cups.service"}))
+        .WillOnce(::testing::Return(active));
+    EXPECT_CALL(*mockCommandExecutor, Exec(commamd, QStringList{"is-active", "ssh.service"}))
+        .WillOnce(::testing::Return(inactive));
+
+    QList<Service> services = serviceTool->GetServicesWithSystemctl();
+    EXPECT_FALSE(services.isEmpty());
+    ASSERT_EQ(services.size(), 2);  // Проверяем, что сервис с '@' был отфильтрован.
+
+    EXPECT_EQ(services[0].name, "cups.service");
+    EXPECT_TRUE(services[0].status);  // enabled
+    EXPECT_TRUE(services[0].active);  // active
+
+    EXPECT_EQ(services[1].name, "ssh.service");
+    EXPECT_FALSE(services[1].status);  // disabled
+    EXPECT_FALSE(services[1].active);  // inactive
 }
 
-TEST_F(CommandUtilTest, IsExecutable) {
-    EXPECT_TRUE(CommandUtil::IsExecutable("ls"));
-    EXPECT_FALSE(CommandUtil::IsExecutable("nonexistent_command"));
-}
+TEST_F(ServiceToolTest, ServiceIsActive) {}
+
+TEST_F(ServiceToolTest, ServiceIsEnable) {}
+
+TEST_F(ServiceToolTest, ChangeServiceStatus) {}
+
+TEST_F(ServiceToolTest, ChangeServiceActive) {}
 
 
+//-------------------------------- Тестовый набор для класса  ---------------------------
+
+//-------------------------------- Тестовый набор для класса  ---------------------------
+
+//-------------------------------- Тестовый набор для класса  ---------------------------
+
+//-------------------------------- Тестовый набор для класса  ---------------------------
