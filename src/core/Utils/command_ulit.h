@@ -4,13 +4,16 @@
 #include <QStringList>
 
 #include "../core_global.h"
+#include "i_command_executor.h"
 
-class CORE_EXPORT CommandUtil {
+/**
+ * @brief Класс с утилитами для выполнения команд.
+ */
+
+class CORE_EXPORT CommandUtil : public ICommandExecutor {
    public:
-    /**
-     * @brief Запрещает создание экземпляров класса, так как он содержит только статические методы.
-     */
-    CommandUtil() = delete;
+    
+    CommandUtil() = default;
 
     /**
      * @brief Выполняет команду с повышенными привилегиями, используя pkexec.
@@ -21,7 +24,7 @@ class CORE_EXPORT CommandUtil {
      * @return Стандартный вывод (stdout) команды в виде QString. В случае ошибки возвращает пустую
      * строку.
      */
-    static QString SudoExec(const QString& command, QStringList args = {});
+     QString SudoExec(const QString& command, QStringList args = {}) override ;
 
     /**
      * @brief Выполняет команду и ожидает ее завершения.
@@ -32,12 +35,12 @@ class CORE_EXPORT CommandUtil {
      * @throw QString В случае ошибки (ненулевой код выхода, сбой или таймаут) выбрасывает
      * исключение с сообщением об ошибке.
      */
-    static QString Exec(const QString& command, const QStringList& args = {});
+     QString Exec(const QString& command, const QStringList& args = {}) override ;
     /**
      * @brief Проверяет, существует ли исполняемый файл в системных путях (переменная окружения
      * PATH).
      * @param command Имя команды для проверки (например, "ls", "grep").
      * @return true, если команда найдена и является исполняемым файлом, иначе false.
      */
-    static bool IsExecutable(const QString& command);
+     bool IsExecutable(const QString& command);
 };

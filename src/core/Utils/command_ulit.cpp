@@ -11,7 +11,7 @@ QString CommandUtil::SudoExec(const QString& command, QStringList args) {
     QString result{""};
 
     try {
-        result = CommandUtil::Exec("pkexec", args);
+        result = Exec("pkexec", args);
     } catch (const QString& ex) {
         qCritical() << ex;
     }
@@ -30,7 +30,7 @@ QString CommandUtil::Exec(const QString& command, const QStringList& args) {
         throw QString("Command timed out: %1").arg(command);
     }
 
-    if (process->exitStatus() == QProcess::CrashExit || process->exitCode() != 0) {
+    if (process->exitStatus() == QProcess::CrashExit || process->exitCode() == QProcess::UnknownError) {
         QString error = QString::fromUtf8(process->readAllStandardError()).trimmed();
         if (error.isEmpty()) {
             // Если stderr пуст, используем стандартную ошибку QProcess.
