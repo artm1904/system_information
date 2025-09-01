@@ -138,8 +138,9 @@ TEST_F(FileUtilTest, GetFileSize) {
 }
 
 //-------------------------- Тестовый набор для класса CommandUtil ------------------------------
+// Нужны интеграционные тесты
 
-// class CommandUtilTest : public ::testing::Test {};
+class CommandUtilTest : public ::testing::Test {};
 
 // TEST_F(CommandUtilTest, SudoExec) {
 
@@ -147,16 +148,25 @@ TEST_F(FileUtilTest, GetFileSize) {
 
 // }
 
-// TEST_F(CommandUtilTest, Exec) {
+TEST_F(CommandUtilTest, Exec) {
+    CommandUtil commandUtil;
+    QStringList args{"-al"};
 
-//     QString result = CommandUtil::Exec("ls");
-//     EXPECT_FALSE(result.isEmpty());
-// }
+    QString result = commandUtil.Exec("ls", args);
+    EXPECT_FALSE(result.isEmpty());
+}
 
-// TEST_F(CommandUtilTest, IsExecutable) {
-//     EXPECT_TRUE(CommandUtil::IsExecutable("ls"));
-//     EXPECT_FALSE(CommandUtil::IsExecutable("nonexistent_command"));
-// }
+TEST_F(CommandUtilTest, IsExecutableReturnTrueForExecutableCommand) {
+    CommandUtil commandUtil;
+    QString comamnd{"ls"};
+    EXPECT_TRUE(commandUtil.IsExecutable(comamnd));
+}
+
+TEST_F(CommandUtilTest, IsExecutableReturnFalseForNonExecutableCommand) {
+    CommandUtil commandUtil;
+    QString command{"no_existinng_command"};
+    EXPECT_FALSE(commandUtil.IsExecutable(command));
+}
 
 //-------------------------------- Тестовый набор для класса ServiceTool ---------------------------
 
