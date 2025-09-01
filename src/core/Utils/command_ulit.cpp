@@ -43,7 +43,7 @@ QString CommandUtil::Exec(const QString& command, const QStringList& args) {
     }
 }
 
-bool CommandUtil::IsExecutable(const QString& command) {
+bool CommandUtil::IsExecutable(const QString& command) const  {
     QStringList paths;
     paths << "/usr/bin" << "/usr/sbin" << "/bin" << "/sbin";
 

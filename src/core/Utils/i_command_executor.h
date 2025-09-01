@@ -28,6 +28,13 @@ class ICommandExecutor {
      * @return Стандартный вывод (stdout) команды.
      */
     virtual QString Exec(const QString& command, const QStringList& args = {}) = 0;
+
+    /**
+     * @brief Проверяет, существует ли исполняемый файл в системных путях.
+     * @param command Имя команды для проверки.
+     * @return true, если команда найдена и является исполняемым файлом, иначе false.
+     */
+    virtual bool IsExecutable(const QString& command) const = 0;
 };
 
 using CommandExecutorPtr = std::shared_ptr<ICommandExecutor>;

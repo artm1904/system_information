@@ -174,6 +174,7 @@ class MockCommandExecutor : public ICommandExecutor {
    public:
     MOCK_METHOD(QString, SudoExec, (const QString& command, QStringList args), (override));
     MOCK_METHOD(QString, Exec, (const QString& command, const QStringList& args), (override));
+    MOCK_METHOD(bool, IsExecutable, (const QString& command), (const, override));
 };
 
 class ServiceToolTest : public ::testing::Test {

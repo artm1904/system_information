@@ -42,5 +42,5 @@ class CORE_EXPORT CommandUtil : public ICommandExecutor {
      * @param command Имя команды для проверки (например, "ls", "grep").
      * @return true, если команда найдена и является исполняемым файлом, иначе false.
      */
-     bool IsExecutable(const QString& command);
+     bool IsExecutable(const QString& command) const override;
 };
