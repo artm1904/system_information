@@ -211,14 +211,79 @@ TEST_F(ServiceToolTest, GetServicesWithSystemctl) {
     EXPECT_FALSE(services[1].active);  // inactive
 }
 
-TEST_F(ServiceToolTest, ServiceIsActive) {}
+TEST_F(ServiceToolTest, ServiceIsActiveReturnsTrueForActiveService) {
+    QString commamd{"systemctl"};
+    QString serviceName{"cups.service"};
+    QStringList args{"is-active", serviceName};
+    QString activeState{"active"};
 
-TEST_F(ServiceToolTest, ServiceIsEnable) {}
+    EXPECT_CALL(*mockCommandExecutor, Exec(commamd, args)).WillOnce(::testing::Return(activeState));
+    bool isActive = serviceTool->ServiceIsActive(serviceName);
+    EXPECT_TRUE(isActive);
+}
 
-TEST_F(ServiceToolTest, ChangeServiceStatus) {}
+TEST_F(ServiceToolTest, ServiceIsActiveReturnsFalseForInactiveService) {
+    QString commamd{"systemctl"};
+    QString serviceName{"cups.service"};
+    QStringList args{"is-active", serviceName};
+    QString inactiveState{"inactive"};
 
-TEST_F(ServiceToolTest, ChangeServiceActive) {}
+    EXPECT_CALL(*mockCommandExecutor, Exec(commamd, args))
+        .WillOnce(::testing::Return(inactiveState));
+    bool isActive = serviceTool->ServiceIsActive(serviceName);
+    EXPECT_FALSE(isActive);
+}
 
+TEST_F(ServiceToolTest, ServiceIsEnableReturnsTrueForEnableService) {
+    QString commamd{"systemctl"};
+    QString serviceName{"cups.service"};
+    QStringList args{"is-enabled", serviceName};
+    QString enabledState{"enabled"};
+
+    EXPECT_CALL(*mockCommandExecutor, Exec(commamd, args))
+        .WillOnce(::testing::Return(enabledState));
+    bool isEnable = serviceTool->ServiceIsEnable(serviceName);
+    EXPECT_TRUE(isEnable);
+}
+
+TEST_F(ServiceToolTest, ServiceIsEnableReturnsFalseForDisableService) {
+    QString commamd{"systemctl"};
+    QString serviceName{"cups.service"};
+    QStringList args{"is-enabled", serviceName};
+    QString disabledState{"disabled"};
+
+    EXPECT_CALL(*mockCommandExecutor, Exec(commamd, args))
+        .WillOnce(::testing::Return(disabledState));
+    bool isEnable = serviceTool->ServiceIsEnable(serviceName);
+    EXPECT_FALSE(isEnable);
+}
+
+TEST_F(ServiceToolTest, ChangeServiceStatusWithSuccess) {
+    QString commamd{"systemctl"};
+    QString serviceName{"cups.service"};
+
+    EXPECT_CALL(*mockCommandExecutor, SudoExec(commamd, QStringList{"enable", serviceName}))
+        .WillOnce(::testing::Return(""));
+    EXPECT_TRUE(serviceTool->ChangeServiceStatus(serviceName, true));
+}
+
+TEST_F(ServiceToolTest, ChangeServiceStatusReturnsFalseWhenExecutorThrows) {
+    QString commamd{"systemctl"};
+    QString serviceName{"no_exist.service"};
+    EXPECT_CALL(*mockCommandExecutor, SudoExec(commamd, QStringList{"enable", serviceName}))
+        .WillOnce(::testing::Throw(QString{"Failed to execute"}));
+
+    EXPECT_FALSE(serviceTool->ChangeServiceStatus(serviceName, true));
+}
+
+TEST_F(ServiceToolTest, ChangeServiceActive) {
+    QString commamd{"systemctl"};
+    QString serviceName{"cups.service"};
+
+    EXPECT_CALL(*mockCommandExecutor, SudoExec(commamd, QStringList{"stop", serviceName}))
+        .WillOnce(::testing::Return(""));
+    EXPECT_TRUE(serviceTool->ChangeServiceActive(serviceName, false));
+}
 
 //-------------------------------- Тестовый набор для класса  ---------------------------
 
