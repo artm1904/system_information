@@ -1,4 +1,5 @@
 #include "pacmanManager.h"
+
 #include <QDebug>
 
 QString PacmanPackageManager::GetManagerName() const { return "pacman"; };
@@ -10,12 +11,12 @@ bool PacmanPackageManager::IsManagerInstalled() const {
 QStringList PacmanPackageManager::GetInstalledPackages() {
     QString packages{};
     try {
-        packages = m_commandExecutor->Exec("pacman", QStringList{"-Qe"});
+        packages = m_commandExecutor->Exec("dpkg-query", QStringList{"-W", "-f=${Package}\\n"});
     } catch (const QString& ex) {
-        qCritical() << ex;
+        qCritical() << "Failed to get installed packages with dpkg-query:" << ex;
         return QStringList{};
     }
-    return packages.split("\n");
+    return packages.split('\n', Qt::SkipEmptyParts);
 };
 bool PacmanPackageManager::RemovePackages(const QStringList& packages) {
     if (packages.isEmpty()) {
@@ -23,13 +24,13 @@ bool PacmanPackageManager::RemovePackages(const QStringList& packages) {
     }
 
     QStringList args;
-    args << "-Rns" << "--noconfirm" << packages;
+    args << "purge" << "-y" << packages;
 
     try {
-        m_commandExecutor->SudoExec("pacman", args);
+        m_commandExecutor->SudoExec("apt", args);
         return true;
     } catch (const QString& ex) {
-        qCritical() << "Failed to remove packages with pacman:" << ex;
+        qCritical() << "Failed to remove packages with apt:" << ex;
         return false;
     }
 }
@@ -40,13 +41,13 @@ bool PacmanPackageManager::InstallPackages(const QStringList& packages) {
     }
 
     QStringList args;
-    args << "-S" << "--noconfirm" << packages;
+    args << "install" << "-y" << packages;
 
     try {
-        m_commandExecutor->SudoExec("pacman", args);
+        m_commandExecutor->SudoExec("apt", args);
         return true;
     } catch (const QString& ex) {
-        qCritical() << "Failed to install packages with pacman:" << ex;
+        qCritical() << "Failed to install packages with apt:" << ex;
         return false;
     }
 }
