@@ -9,7 +9,10 @@ PackageTool::PackageTool(CommandExecutorPtr commandExecutor, QObject* parent)
     : QObject(parent), m_commandExecutor(commandExecutor) {
     QList<PackageManagerPtr> knownManagers;
     knownManagers << std::make_shared<PacmanPackageManager>(m_commandExecutor);
+    // Создаем прототипы всех известных нам менеджеров
+    //TODO
 
+    
     for (const auto& manager : knownManagers) {
         if (manager->IsManagerInstalled()) {
             m_packageManagers.append(manager);
@@ -56,4 +59,3 @@ bool PackageTool::InstallPackages(const QString& managerName, const QStringList&
     qWarning() << "Package manager " << managerName << "or packages " << packages << "not found";
     return false;
 }
-

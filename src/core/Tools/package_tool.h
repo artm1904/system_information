@@ -21,6 +21,8 @@ class CORE_EXPORT PackageTool : public QObject {
      * @param executor Указатель на исполнителя команд.
      */
     explicit PackageTool(CommandExecutorPtr commandExecutor, QObject* parent = nullptr);
+
+    // Возвращает список имен доступных менеджеров (например, ["pacman", "yay"])
     QStringList AvailablePackageManagers() const;
 
     QStringList GetInstalledPackages(const QString& managerName);
@@ -30,6 +32,7 @@ class CORE_EXPORT PackageTool : public QObject {
    public slots:
 
    private:
+    // Храним список доступных стратегий
     QList<PackageManagerPtr> m_packageManagers;
 
     CommandExecutorPtr m_commandExecutor;
