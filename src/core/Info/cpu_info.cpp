@@ -1,5 +1,9 @@
 #include "cpu_info.h"
 
+#include <QDebug>
+#include <QRegularExpression>
+
+
 CpuInfo::CpuInfo() {}
 
 quint8 CpuInfo::GetCpuCoreCount() {
