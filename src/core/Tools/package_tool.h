@@ -25,11 +25,10 @@ class CORE_EXPORT PackageTool : public QObject {
     // Возвращает список имен доступных менеджеров (например, ["pacman", "yay"])
     QStringList AvailablePackageManagers() const;
 
+   public slots:
     QStringList GetInstalledPackages(const QString& managerName);
     bool RemovePackages(const QString& managerName, const QStringList& packages);
     bool InstallPackages(const QString& managerName, const QStringList& packages);
-
-   public slots:
 
    private:
     // Храним список доступных стратегий
