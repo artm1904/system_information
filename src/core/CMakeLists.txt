@@ -24,7 +24,5 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE LIBSYSTEM_CORE_LIBRARY)
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/Info,
-    ${CMAKE_CURRENT_SOURCE_DIR}/Tool,
-    ${CMAKE_CURRENT_SOURCE_DIR}/Utils
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )

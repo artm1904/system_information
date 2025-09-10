@@ -16,6 +16,8 @@
 class CORE_EXPORT PackageTool : public QObject {
     Q_OBJECT
 
+    public:
+
     /**
      * @brief Конструктор. Обнаруживает доступные в системе пакетные менеджеры.
      * @param executor Указатель на исполнителя команд.

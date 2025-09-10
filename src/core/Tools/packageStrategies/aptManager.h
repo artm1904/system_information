@@ -1,5 +1,3 @@
-#pragma  once;
-
 #pragma once
 
 #include "../i_package_manager.h"
