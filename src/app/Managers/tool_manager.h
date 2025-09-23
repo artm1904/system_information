@@ -12,6 +12,7 @@ class ToolManager : public QObject {
     Q_OBJECT
 
    public:
+    // lazy initialization (only when first use)
     static std::shared_ptr<ToolManager> Instance();
 
     QList<Service> GetServices();
@@ -27,14 +28,13 @@ class ToolManager : public QObject {
 
    signals:
 
-   //TODO в tool_manager.cpp эти сигналы используются, они описаны в Pages/Uninstaller/uninstaller_page.cpp 
+    // TODO в tool_manager.cpp эти сигналы используются, они описаны в
+    // Pages/Uninstaller/uninstaller_page.cpp
     void UninstallFinished();
     void UninstallStarted();
 
    private:
     ToolManager(QObject* parent = nullptr);
-
-    static std::shared_ptr<ToolManager> m_instance;
 
     std::unique_ptr<ServiceTool> m_serviceTool;
     std::unique_ptr<PackageTool> m_packageTool;

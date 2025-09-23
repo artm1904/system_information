@@ -31,13 +31,10 @@ AppManager::AppManager(QObject *parent) : QObject(parent) {
                                   QSettings::NativeFormat);
 }
 
-std::shared_ptr<AppManager> AppManager::m_instance = nullptr;
-
+//'Meyers' Singleton, using static value for multithreding safe (C++11)
 std::shared_ptr<AppManager> AppManager::Instance() {
-    if (m_instance == nullptr) {
-        m_instance.reset(new AppManager());
-    }
-    return m_instance;
+    static std::shared_ptr<AppManager> instance(new AppManager());
+    return instance;
 }
 
 /** Language */

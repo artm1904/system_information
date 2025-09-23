@@ -12,7 +12,8 @@
 
 class InfoManager {
    public:
-    std::shared_ptr<InfoManager> Instance();
+    // lazy initialization (only when first use)
+    static std::shared_ptr<InfoManager> Instance();
 
     quint8 GetCpuCoreCount();
     QList<int> GetCpuPercents();
@@ -39,7 +40,6 @@ class InfoManager {
 
    private:
     InfoManager();
-    static std::shared_ptr<InfoManager> m_instance;
 
     std::unique_ptr<CpuInfo> m_ci;
     std::unique_ptr<DiskInfo> m_di;

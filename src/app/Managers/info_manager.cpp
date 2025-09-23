@@ -11,23 +11,18 @@ InfoManager::InfoManager() {
     m_pi = std::make_unique<ProcessInfo>(commandExecutor);
 }
 
-std::shared_ptr<InfoManager> InfoManager::m_instance = nullptr;
-
+//'Meyers' Singleton, using static value for multithreding safe (C++11)
 std::shared_ptr<InfoManager> InfoManager::Instance() {
-    if (m_instance == nullptr) {
-        m_instance.reset(new InfoManager());
-    }
-    return m_instance;
+    static std::shared_ptr<InfoManager> instance(new InfoManager());
+    return instance;
 }
 
 /** CPU information */
-
 quint8 InfoManager::GetCpuCoreCount() { return m_ci->GetCpuCoreCount(); }
 
 QList<int> InfoManager::GetCpuPercents() { return m_ci->GetCpuPercents(); }
 
 /** Memory information */
-
 quint64 InfoManager::GetSwapUsed() { return m_mi->GetSwapUsed(); }
 quint64 InfoManager::GetSwapTotal() { return m_mi->GetSwapTotal(); }
 quint64 InfoManager::GetMemUsed() { return m_mi->GetMemUsed(); }
@@ -35,7 +30,6 @@ quint64 InfoManager::GetMemTotal() { return m_mi->GetMemTotal(); }
 void InfoManager::UpdateMemoryInfo() { m_mi->UpdateMemoryInfo(); }
 
 /** Disk information */
-
 QList<Disk> InfoManager::GetDisks() { return m_di->GetDisks(); }
 void InfoManager::UpdateDiskInfo() { m_di->UpdateDiskInfo(); }
 

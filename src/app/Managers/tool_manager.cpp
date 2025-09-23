@@ -2,13 +2,10 @@
 
 #include <Utils/command_ulit.h>
 
-std::shared_ptr<ToolManager> ToolManager::m_instance = nullptr;
-
+//'Meyers' Singleton, using static value for multithreding safe (C++11)
 std::shared_ptr<ToolManager> ToolManager::Instance() {
-    if (m_instance == nullptr) {
-        m_instance.reset(new ToolManager());
-    }
-    return m_instance;
+    static std::shared_ptr<ToolManager> instance(new ToolManager());
+    return instance;
 }
 
 QList<Service> ToolManager::GetServices() { return m_serviceTool->GetServicesWithSystemctl(); }
@@ -38,7 +35,6 @@ bool ToolManager::ServiceIsActive(QString sname) { return m_serviceTool->Service
 bool ToolManager::ServiceIsEnabled(QString sname) { return m_serviceTool->ServiceIsEnable(sname); }
 
 void ToolManager::UninstallPackages(QStringList packages) {
-    
     UninstallStarted();
 
     QStringList packageManagers = m_packageTool->AvailablePackageManagers();

@@ -14,7 +14,7 @@ class AppManager : public QObject {
     Q_OBJECT
 
    public:
-    std::shared_ptr<AppManager> Instance();
+    static std::shared_ptr<AppManager> Instance();
 
     QString GetLanguageCode();
     void SetLanguage(QString value);
@@ -35,7 +35,6 @@ class AppManager : public QObject {
 
    private:
     explicit AppManager(QObject *parent = nullptr);
-    static std::shared_ptr<AppManager> m_instance;
 
     QTranslator m_translator;
     QString m_configPath;
