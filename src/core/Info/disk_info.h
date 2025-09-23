@@ -4,7 +4,6 @@
 #include "../Utils/command_ulit.h"
 #include "../core_global.h"
 
-#define PROC_MEMINFO "/proc/mounts"
 
 class Disk {
    public:

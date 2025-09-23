@@ -1,6 +1,9 @@
 #include <QApplication>
 #include <QDebug>
+#include <QRegularExpression>
+#include <iostream>
 
+#include "../core/Utils/file_util.h"
 #include "app.h"
 
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
@@ -64,10 +67,15 @@ int main(int argc, char *argv[]) {
     qApp->setApplicationVersion("0.0.1");
     qApp->setWindowIcon(QIcon(":/static/logo.png"));
 
-    qInstallMessageHandler(messageHandler);
+   // qInstallMessageHandler(messageHandler);
 
     MainWindowImpl w;
     w.show();
+
+    QStringList lines =
+        FileUtil::ReadListFromFile("/proc/cpuinfo");
+    // Для отладки содержимого QStringList лучше использовать qDebug()
+    qDebug() << "CPU model lines found:" << lines;
 
     return app.exec();
 }

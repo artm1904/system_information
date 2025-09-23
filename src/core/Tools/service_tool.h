@@ -21,7 +21,7 @@ class Service {
    private:
 };
 
-std::ostream& operator<<(std::ostream& os, const Service& service) {
+inline std::ostream& operator<<(std::ostream& os, const Service& service) {
     os << "Name: " << service.name.toStdString()
        << ", Status: " << (service.status ? "enabled" : "disabled")
        << ", Active: " << (service.active ? "true" : "false");

@@ -3,7 +3,6 @@
 #include <QDebug>
 #include <QRegularExpression>
 
-
 CpuInfo::CpuInfo() {}
 
 quint8 CpuInfo::GetCpuCoreCount() {
@@ -66,10 +65,10 @@ int CpuInfo::GetOneCpuPercent(QList<double> cpuTimes, int processor) {
     static QVector<double> l_idles(n);
     static QVector<double> l_totals(n);
 
-    double idle;
-    double total;
-    double idle_delta;
-    double total_delta;
+    double idle = 0.0;
+    double total = 0.0;
+    double idle_delta = 0.0;
+    double total_delta = 0.0;
 
     int utilisation = 0;
 
