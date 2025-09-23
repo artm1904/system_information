@@ -39,8 +39,8 @@ class AppManager : public QObject {
     QTranslator m_translator;
     QString m_configPath;
     QString m_themeName;
-    QSettings *m_settings;
-    QSettings *m_styleValues;
+    std::unique_ptr<QSettings> m_settings;
+    std::unique_ptr<QSettings> m_styleValues;
     QMap<QString, QString> m_languageList;
     QMap<QString, QString> m_themeList;
     QString m_stylesheetFileContent;

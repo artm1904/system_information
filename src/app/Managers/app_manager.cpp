@@ -11,8 +11,8 @@ AppManager::AppManager(QObject *parent) : QObject(parent) {
     QFontDatabase::addApplicationFont(":/static/font/Ubuntu-R.ttf");
 
     m_configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    m_settings =
-        new QSettings(QString("%1/settings.conf").arg(m_configPath), QSettings::NativeFormat);
+    m_settings = std::make_unique<QSettings>(QString("%1/settings.conf").arg(m_configPath),
+                                             QSettings::NativeFormat);
 
     LoadLanguageList();
 
@@ -27,8 +27,8 @@ AppManager::AppManager(QObject *parent) : QObject(parent) {
         qCritical() << "Translator could not load.";
     }
 
-    m_styleValues = new QSettings(QString(":/static/themes/%1/style/values.ini").arg(m_themeName),
-                                  QSettings::NativeFormat);
+    m_styleValues = std::make_unique<QSettings>(
+        QString(":/static/themes/%1/style/values.ini").arg(m_themeName), QSettings::NativeFormat);
 }
 
 //'Meyers' Singleton, using static value for multithreding safe (C++11)
@@ -78,17 +78,20 @@ void AppManager::LoadThemeList() {
 
 /** Style */
 
-QSettings *AppManager::GetStyleValues() const { return m_styleValues; }
+QSettings *AppManager::GetStyleValues() const { return m_styleValues.get(); }
 
 QString AppManager::GetStylesheetFileContent() const { return m_stylesheetFileContent; }
 
 void AppManager::UpdateStylesheet() {
-    m_styleValues = new QSettings(QString(":/static/themes/%1/style/values.ini").arg(m_themeName),
-                                  QSettings::NativeFormat);
+    // read .ini file with colors and other param
+    m_styleValues = std::make_unique<QSettings>(
+        QString(":/static/themes/%1/style/values.ini").arg(m_themeName), QSettings::NativeFormat);
 
+    // real .qss file with description-style
     m_stylesheetFileContent = FileUtil::ReadStringFromFile(
         QString(":/static/themes/%1/style/style.qss").arg(m_themeName));
 
+    // replace .qss to param from .ini
     for (QString key : m_styleValues->allKeys()) {
         m_stylesheetFileContent.replace(key, m_styleValues->value(key).toString());
     }
