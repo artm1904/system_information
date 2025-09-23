@@ -1,0 +1,102 @@
+#include "app_manager.h"
+
+#include <QApplication>
+#include <QFontDatabase>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QStandardPaths>
+
+AppManager::AppManager(QObject *parent) : QObject(parent) {
+    // font settings
+    QFontDatabase::addApplicationFont(":/static/font/Ubuntu-R.ttf");
+
+    m_configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    m_settings =
+        new QSettings(QString("%1/settings.conf").arg(m_configPath), QSettings::NativeFormat);
+
+    LoadLanguageList();
+
+    LoadThemeList();
+
+    m_themeName = m_settings->value(THEME_PROP, "default").toString();
+
+    if (m_translator.load(QString("stacer_%1").arg(GetLanguageCode()),
+                          qApp->applicationDirPath() + "/translations")) {
+        qApp->installTranslator(&m_translator);
+    } else {
+        qCritical() << "Translator could not load.";
+    }
+
+    m_styleValues = new QSettings(QString(":/static/themes/%1/style/values.ini").arg(m_themeName),
+                                  QSettings::NativeFormat);
+}
+
+std::shared_ptr<AppManager> AppManager::m_instance = nullptr;
+
+std::shared_ptr<AppManager> AppManager::Instance() {
+    if (m_instance == nullptr) {
+        m_instance.reset(new AppManager());
+    }
+    return m_instance;
+}
+
+/** Language */
+
+QString AppManager::GetLanguageCode() { return m_settings->value(LANG_PROP, "en").toString(); }
+
+void AppManager::SetLanguage(QString value) { m_settings->setValue(LANG_PROP, value); }
+
+QMap<QString, QString> AppManager::GetLanguageList() { return m_languageList; }
+
+void AppManager::LoadLanguageList() {
+    QJsonArray languages =
+        QJsonDocument::fromJson(FileUtil::ReadStringFromFile(":/static/languages.json").toUtf8())
+            .array();
+
+    for (int i = 0; i < languages.size(); i++) {
+        QJsonObject language = languages.at(i).toObject();
+        m_languageList.insert(language["code"].toString(), language["name"].toString());
+    }
+}
+
+/** Theme */
+
+QString AppManager::GetThemeName() const { return m_themeName; }
+
+void AppManager::SetThemeName(const QString &value) { m_themeName = value; }
+
+QMap<QString, QString> AppManager::GetThemeList() const { return m_themeList; }
+
+void AppManager::LoadThemeList() {
+    QJsonArray themes =
+        QJsonDocument::fromJson(FileUtil::ReadStringFromFile(":/static/themes.json").toUtf8())
+            .array();
+
+    for (int i = 0; i < themes.count(); ++i) {
+        QJsonObject theme = themes.at(i).toObject();
+
+        m_themeList.insert(theme["value"].toString(), theme["text"].toString());
+    }
+}
+
+/** Style */
+
+QSettings *AppManager::GetStyleValues() const { return m_styleValues; }
+
+QString AppManager::GetStylesheetFileContent() const { return m_stylesheetFileContent; }
+
+void AppManager::UpdateStylesheet() {
+    m_styleValues = new QSettings(QString(":/static/themes/%1/style/values.ini").arg(m_themeName),
+                                  QSettings::NativeFormat);
+
+    m_stylesheetFileContent = FileUtil::ReadStringFromFile(
+        QString(":/static/themes/%1/style/style.qss").arg(m_themeName));
+
+    for (QString key : m_styleValues->allKeys()) {
+        m_stylesheetFileContent.replace(key, m_styleValues->value(key).toString());
+    }
+
+    qApp->setStyleSheet(m_stylesheetFileContent);
+
+    emit ChangedTheme();
+}
