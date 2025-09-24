@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Charts Concurrent) 
 
 qt_standard_project_setup()
 
@@ -22,8 +22,13 @@ qt_add_executable(${PROJECT_NAME}
     ${RESOURCES}
 )
 
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE Qt6::Core Qt6::Widgets Qt6::Gui
+    PRIVATE Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Charts Qt6::Concurrent
     libsystem_core project_options
 )
