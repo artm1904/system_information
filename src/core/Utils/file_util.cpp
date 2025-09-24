@@ -8,9 +8,11 @@ QString FileUtil::ReadStringFromFile(const QString& path, QIODevice::OpenMode mo
 
     QString data;
 
-    if (file.open(mode)) {
+    if (file.open(mode | QIODevice::Text)) {
         data = file.readAll();
         file.close();
+    } else {
+        qWarning() << "Failed to open file for reading:" << path << "Error:" << file.errorString();
     }
 
     return data;
@@ -22,10 +24,14 @@ QStringList FileUtil::ReadListFromFile(const QString& path, QIODevice::OpenMode 
 
     if (file.open(mode | QIODevice::Text)) {  // QIODevice::Text для обработки конца строк
         QTextStream in{&file};                // читаем большой текстовый файл построчно
-        while (in.atEnd() == false) {
-            list << in.readLine();
+        // while(!in.atEnd()) is not suitable for в /proc/*.
+        for (QString line = in.readLine(); !line.isNull(); line = in.readLine()) {
+            list.append(line);
         }
         file.close();
+    } else {
+        qWarning() << "Failed to open file for reading list:" << path
+                   << "Error:" << file.errorString();
     }
     return list;
 }
@@ -39,6 +45,8 @@ bool FileUtil::WriteFile(const QString& path, const QString& data, QIODevice::Op
         file.close();
 
         return true;
+    } else {
+        qWarning() << "Failed to open file for writing:" << path << "Error:" << file.errorString();
     }
     return false;
 }
