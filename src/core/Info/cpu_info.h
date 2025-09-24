@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QVector>
 
-#include "../Utils/file_util.h"
+#include "../Utils/i_file_reader.h" //Dependecy injection for testing
 #include "../core_global.h"
 
 #define PROC_CPUINFO "/proc/cpuinfo"
@@ -11,11 +11,16 @@
 
 class CORE_EXPORT CpuInfo {
    public:
-    CpuInfo();
+    explicit CpuInfo(FileReaderPtr fileReader);
 
     quint8 GetCpuCoreCount();
     QList<int> GetCpuPercents();
 
    private:
-    int GetOneCpuPercent(QList<double> cpuTimes, int processor = 0);
+    int GetOneCpuPercent(const QList<double>& cpuTimes, int processor, QVector<double>& lastIdles,
+                         QVector<double>& lastTotals);
+    FileReaderPtr m_fileReader;
+
+    QVector<double> m_lastIdles;
+    QVector<double> m_lastTotals;
 };

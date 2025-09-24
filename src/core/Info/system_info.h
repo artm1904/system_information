@@ -7,11 +7,9 @@
 #include "../core_global.h"
 #include "cpu_info.h"
 
-#define PROC_CPUINFO "/proc/cpuinfo"
-
 class CORE_EXPORT SystemInfo {
    public:
-    SystemInfo();
+    explicit SystemInfo(std::shared_ptr<CpuInfo> cpuInfo, FileReaderPtr fileReader);
 
     QString GetUsername() const;
     QString GetHostname() const;

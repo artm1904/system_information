@@ -1,13 +1,16 @@
 #include "info_manager.h"
 
+#include "Utils/qt_file_reader.h"
+
 InfoManager::InfoManager() {
     CommandExecutorPtr commandExecutor = std::make_shared<CommandUtil>();
+    FileReaderPtr fileReader = std::make_shared<QtFileReader>();  // Dependecy injection for testing
 
-    m_ci = std::make_unique<CpuInfo>();
+    m_ci = std::make_shared<CpuInfo>(fileReader);
     m_di = std::make_unique<DiskInfo>(commandExecutor);
     m_mi = std::make_unique<MemoryInfo>();
     m_ni = std::make_unique<NetworkInfo>();
-    m_si = std::make_unique<SystemInfo>();
+    m_si = std::make_unique<SystemInfo>(m_ci, fileReader);
     m_pi = std::make_unique<ProcessInfo>(commandExecutor);
 }
 
@@ -37,10 +40,19 @@ void InfoManager::UpdateDiskInfo() { m_di->UpdateDiskInfo(); }
 quint64 InfoManager::GetRXbytes() { return m_ni->GetRXbytes(); }
 quint64 InfoManager::GetTXbytes() { return m_ni->GetTXbytes(); }
 
-/** System information */
+/** System  log information */
 QFileInfoList InfoManager::GetCrashReports() { return m_si->GetCrashReports(); }
 QFileInfoList InfoManager::GetAppLogs() { return m_si->GetAppLogs(); }
 QFileInfoList InfoManager::GetAppCaches() { return m_si->GetAppCaches(); }
+
+//** System describe inforamtion */
+QString InfoManager::GetHostname() { return m_si->GetHostname(); }
+QString InfoManager::GetPlatform() { return m_si->GetPlatform(); }
+QString InfoManager::GetDistribution() { return m_si->GetDistribution(); }
+QString InfoManager::GetKernel() { return m_si->GetKernel(); }
+QString InfoManager::GetCpuModel() { return m_si->GetCpuModel(); }
+QString InfoManager::GetCpuSpeed() { return m_si->GetCpuSpeed(); }
+QString InfoManager::GetCpuCore() { return m_si->GetCpuCore(); }
 
 /** Process information */
 void InfoManager::UpdateProcesses() { m_pi->UpdateProcessList(); }

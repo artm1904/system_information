@@ -3,12 +3,17 @@
 #include <QDebug>
 #include <QRegularExpression>
 
-CpuInfo::CpuInfo() {}
+CpuInfo::CpuInfo(FileReaderPtr fileReader) : m_fileReader(fileReader) {
+    // Initialize vectors with a size of 1 to avoid issues if GetCpuCoreCount is 0 initially.
+    // They will be resized on the first call to GetCpuPercents.
+    m_lastIdles.resize(1);
+    m_lastTotals.resize(1);
+}
 
 quint8 CpuInfo::GetCpuCoreCount() {
     quint8 coreCount = 0;
 
-    QStringList allLines = FileUtil::ReadListFromFile(PROC_CPUINFO);
+    QStringList allLines = m_fileReader->ReadListFromFile(PROC_CPUINFO);
 
     if (allLines.isEmpty() == false) {
         coreCount = allLines.filter(QRegularExpression("^processor\\b")).count();
@@ -20,9 +25,12 @@ quint8 CpuInfo::GetCpuCoreCount() {
 QList<int> CpuInfo::GetCpuPercents() {
     QList<double> cpuTimes;
 
+    int coreCount = this->GetCpuCoreCount();
+    int vectorSize = coreCount + 1;
+
     QList<int> cpuPercents;
 
-    QStringList allLine = FileUtil::ReadListFromFile(PROC_STAT);
+    QStringList allLine = m_fileReader->ReadListFromFile(PROC_STAT);
 
     if (allLine.isEmpty() == false) {
         /*  user nice system idle iowait  irq  softirq steal guest guest_nice
@@ -43,28 +51,34 @@ QList<int> CpuInfo::GetCpuPercents() {
             - guest_nice: running a niced guest
        */
 
-        for (int i = 0; i < CpuInfo::GetCpuCoreCount() + 1; ++i) {
+        // Ensure vectors are initialized and have the correct size
+        if (m_lastIdles.size() != vectorSize) {
+            m_lastIdles.resize(vectorSize);
+            m_lastIdles.fill(0.0);
+        }
+        if (m_lastTotals.size() != vectorSize) {
+            m_lastTotals.resize(vectorSize);
+            m_lastTotals.fill(0.0);
+        }
+
+        for (int i = 0; i < vectorSize; ++i) {
             QStringList n_times =
                 allLine.at(i).split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
             n_times.removeFirst();
 
-            for (const QString &t : n_times) {
+            for (const QString& t : n_times) {
                 cpuTimes << t.toDouble();
             }
 
-            cpuPercents << GetOneCpuPercent(cpuTimes, i);
+            cpuPercents << GetOneCpuPercent(cpuTimes, i, m_lastIdles, m_lastTotals);
             cpuTimes.clear();
         }
     }
     return cpuPercents;
 }
 
-int CpuInfo::GetOneCpuPercent(QList<double> cpuTimes, int processor) {
-    int n = GetCpuCoreCount() + 1;
-
-    static QVector<double> l_idles(n);
-    static QVector<double> l_totals(n);
-
+int CpuInfo::GetOneCpuPercent(const QList<double>& cpuTimes, int processor,
+                              QVector<double>& l_idles, QVector<double>& l_totals) {
     double idle = 0.0;
     double total = 0.0;
     double idle_delta = 0.0;
@@ -79,10 +93,10 @@ int CpuInfo::GetOneCpuPercent(QList<double> cpuTimes, int processor) {
             total += t;
         }
 
-        idle_delta = idle - l_idles.at(processor);
-        total_delta = total - l_totals.at(processor);
-        l_idles.replace(processor, idle);
-        l_totals.replace(processor, total);
+        idle_delta = idle - l_idles[processor];
+        total_delta = total - l_totals[processor];
+        l_idles[processor] = idle;
+        l_totals[processor] = total;
 
         utilisation = 100 * ((total_delta - idle_delta) / total_delta);
     }

@@ -4,10 +4,11 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 
-#include "../Utils/file_util.h"
+#include "Utils/qt_file_reader.h"
 
-SystemInfo::SystemInfo() : m_info(std::make_unique<QSysInfo>()) {
-    QStringList allLines = FileUtil::ReadListFromFile(PROC_CPUINFO);
+SystemInfo::SystemInfo(std::shared_ptr<CpuInfo> cpuInfo, FileReaderPtr fileReader)
+    : m_info(std::make_unique<QSysInfo>()) {
+    QStringList allLines = fileReader->ReadListFromFile(PROC_CPUINFO);
     QStringList modelLines = allLines.filter(QRegularExpression("^model name\\b"));
     QStringList speedLines = allLines.filter(QRegularExpression("^cpu MHz\\b"));
     QStringList coreLines = allLines.filter(QRegularExpression("^cpu cores\\b"));
@@ -41,8 +42,7 @@ SystemInfo::SystemInfo() : m_info(std::make_unique<QSysInfo>()) {
     //     m_cpuCore = "N/A";
     // }
 
-    CpuInfo ci;
-    m_cpuCore = QString::number(ci.GetCpuCoreCount());
+    m_cpuCore = QString::number(cpuInfo->GetCpuCoreCount());
 
     // Get user name
 
