@@ -9,11 +9,13 @@
 #include <iostream>
 #include <memory>
 
+#include "Info/cpu_info.h"
 #include "Tools/service_tool.h"
 #include "Utils/command_ulit.h"
 #include "Utils/file_util.h"
 #include "Utils/format_util.h"
 #include "Utils/i_command_executor.h"
+#include "Utils/qt_file_reader.h"
 
 //------------------------------- Тестовый набор для класса FormatUtil -----------------------------
 class FormatUtilTest : public ::testing::Test {};
@@ -294,6 +296,96 @@ TEST_F(ServiceToolTest, ChangeServiceActive) {
     EXPECT_CALL(*mockCommandExecutor, SudoExec(commamd, QStringList{"stop", serviceName}))
         .WillOnce(::testing::Return(""));
     EXPECT_TRUE(serviceTool->ChangeServiceActive(serviceName, false));
+}
+
+//-------------------------------- Тестовый набор для класса CpuInfo ---------------------------
+
+class MockFileReader : public IFileReader {
+   public:
+    MOCK_METHOD(QStringList, ReadListFromFile, (const QString& path), (const, override));
+};
+
+class CpuInfoTest : public ::testing::Test {
+   protected:
+    std::shared_ptr<MockFileReader> mockFileReader;
+    std::unique_ptr<CpuInfo> cpuInfo;
+
+    void SetUp() override {
+        mockFileReader = std::make_shared<MockFileReader>();
+        cpuInfo = std::make_unique<CpuInfo>(mockFileReader);
+    }
+};
+
+TEST_F(CpuInfoTest, GetCpuCoreCount) {  // unit test
+    QStringList cpuInfoOutput = {"processor\t: 0", "processor\t: 1", "vendor_id\t: GenuineIntel",
+                                 "processor\t: 2", "processor\t: 3"};
+
+    EXPECT_CALL(*mockFileReader, ReadListFromFile((QString)PROC_CPUINFO))
+        .WillOnce(::testing::Return(cpuInfoOutput));
+
+    quint8 coreCount = cpuInfo->GetCpuCoreCount();
+    EXPECT_EQ(coreCount, 4);
+}
+
+TEST_F(CpuInfoTest, GetCpuPercents) {  // unit test
+
+    QStringList cpuInfoOutput = {"processor\t: 0"};  // 1 core
+    QStringList statOutput1 = {
+        "cpu  1000 0 500 8000 0 0 0 0 0 0",  // Total: 9500, Idle: 8000
+        "cpu0 1000 0 500 8000 0 0 0 0 0 0"   // Total: 9500, Idle: 8000
+    };
+
+    // Mock GetCpuCoreCount first call GetCpuPercents
+    EXPECT_CALL(*mockFileReader, ReadListFromFile((QString)PROC_CPUINFO))
+        .WillOnce(::testing::Return(cpuInfoOutput));
+    EXPECT_CALL(*mockFileReader, ReadListFromFile((QString)PROC_STAT))
+        .WillOnce(::testing::Return(statOutput1));
+
+    cpuInfo->GetCpuPercents();
+
+    //  calculate percentage
+    QStringList statOutput2 = {
+        "cpu  1250 0 750 8500 0 0 0 0 0 0",  // Total: 10500, Idle: 8500
+                                             // Delta Total: 1000, Delta Idle: 500
+                                             // Usage = (1000 - 500) / 1000 = 50%
+        "cpu0 1250 0 750 8500 0 0 0 0 0 0"   // Same for cpu0
+    };
+
+    // Mock GetCpuCoreCount call again for the second run
+    EXPECT_CALL(*mockFileReader, ReadListFromFile((QString)PROC_CPUINFO))
+        .WillOnce(::testing::Return(cpuInfoOutput));
+    EXPECT_CALL(*mockFileReader, ReadListFromFile((QString)PROC_STAT))
+        .WillOnce(::testing::Return(statOutput2));
+
+    QList<int> percents = cpuInfo->GetCpuPercents();
+
+    ASSERT_EQ(percents.size(), 2);  // Total + 1 core
+    EXPECT_EQ(percents.at(0), 50);  // Overall CPU usage
+    EXPECT_EQ(percents.at(1), 50);  // Core 0 usage
+}
+
+TEST_F(CpuInfoTest, GetCpuPercentsHandlesEmptyFile) {
+    EXPECT_CALL(*mockFileReader, ReadListFromFile((QString)PROC_CPUINFO))
+        .WillOnce(::testing::Return(QStringList{}));
+    EXPECT_CALL(*mockFileReader, ReadListFromFile((QString)PROC_STAT))
+        .WillOnce(::testing::Return(QStringList{}));
+
+    QList<int> percents = cpuInfo->GetCpuPercents();
+    EXPECT_TRUE(percents.isEmpty());
+}
+
+class CpuInfoIntegrationTest : public ::testing::Test {};
+
+TEST_F(CpuInfoIntegrationTest,
+       GetCpuCoreCount_FromRealFile) {  // integration test with read  /proc/cpuinfo
+    auto realFileReader = std::make_shared<QtFileReader>();
+    auto cpuInfoWithRealReader = std::make_unique<CpuInfo>(realFileReader);
+
+    // Expect find more that one core
+    quint8 coreCount = cpuInfoWithRealReader->GetCpuCoreCount();
+    EXPECT_GT(coreCount, 0);
+
+    qDebug() << "Integration Test: Detected" << coreCount << "cores from real /proc/cpuinfo";
 }
 
 //-------------------------------- Тестовый набор для класса  ---------------------------
