@@ -9,6 +9,7 @@ class Disk {
    public:
     Disk() {}
 
+    QString name;
     quint64 size;
     quint64 free;
     quint64 used;

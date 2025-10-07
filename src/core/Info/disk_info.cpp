@@ -8,22 +8,28 @@ DiskInfo::DiskInfo(CommandExecutorPtr commandExecutor) : m_commandExecutor(comma
 QList<Disk> DiskInfo::GetDisks() const { return m_disks; }
 
 void DiskInfo::UpdateDiskInfo() {
+    m_disks.clear();  // if block devise was plag or unplaged it needs delete
+
     try {
         QStringList lines = m_commandExecutor->Exec(QString{"df"}, QStringList{"-Pl"}).split("\n");
         if (lines.isEmpty() == false) {
-            for (const QString& line : lines) {
+            for (int i = 1; i < lines.size(); i++) {
+                QString line = lines.at(i);
                 QStringList fields = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
-                Disk disk;
 
-                //qDebug() << "Disk lines found:" << fields;
+                // qDebug() << "Disk lines found:" << fields;
 
-                if (fields.size() >= 6) {
-                    disk.size = fields[1].toULongLong();
-                    disk.free = fields[2].toULongLong();
-                    disk.used = fields[3].toULongLong();
+                if (fields.size() >= 6 &&
+                    fields.first().startsWith("/dev")) {  // Get only block device
+                    Disk disk;
+                    disk.name = fields.at(0);
+                    // df -Pl show info in 1024-byte blocks, convert in bytes
+                    disk.size = fields.at(1).toULongLong() * 1024;
+                    disk.used = fields.at(2).toULongLong() * 1024;
+                    disk.free = fields.at(3).toULongLong() * 1024;
+
+                    m_disks << disk;
                 }
-
-                m_disks << disk;
             }
         }
     } catch (const QString& ex) {
