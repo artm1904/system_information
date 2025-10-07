@@ -54,6 +54,13 @@ void CircleBar::Init() {
 
     ui->chartLayout->insertWidget(1, m_chartView);  // insert set up widget in QVBoxLayout from .iu
 
+    // Set the start color
+    m_series->slices().last()->setColor(
+        AppManager::Instance()->GetStyleValues()->value("@pageContent").toString());
+    m_chartView->setBackgroundBrush(QColor(
+        AppManager::Instance()->GetStyleValues()->value("@circleChartBackgroundColor").toString()));
+
+
     // We need to get the raw pointer from the shared_ptr for connect
     connect(AppManager::Instance().get(), &AppManager::ChangedTheme, this, [this]() {
         m_chartView->setBackgroundBrush(QColor(AppManager::Instance()

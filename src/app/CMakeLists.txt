@@ -6,6 +6,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Charts Concurrent)
 
 qt_standard_project_setup()
 
+set(CMAKE_AUTORCC ON)
+
 # Автоматически и рекурсивно находим все файлы в текущей директории и поддиректориях.
 # CONFIGURE_DEPENDS гарантирует, что CMake перезапустит конфигурацию,
 # если вы добавите или удалите файлы.
@@ -19,7 +21,7 @@ qt_add_executable(${PROJECT_NAME}
     ${SOURCES}
     ${HEADERS}
     ${UI_FILES}
-    ${RESOURCES}
+    ${RESOURCES} static.qrc
 )
 
 target_include_directories(${PROJECT_NAME}
