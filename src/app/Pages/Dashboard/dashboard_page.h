@@ -35,7 +35,7 @@ class DashboardPage : public QWidget {
    private:
     std::unique_ptr<CircleBar> m_cpuBar;
     std::unique_ptr<CircleBar> m_memBar;
-    std::unique_ptr<CircleBar> m_diskBar;
+    QVector<std::shared_ptr<CircleBar>> m_diskBars;
     std::unique_ptr<LineBar> m_downloadBar;
     std::unique_ptr<LineBar> m_uploadBar;
     std::unique_ptr<QTimer> m_timer;
