@@ -22,15 +22,12 @@ class DashboardPage : public QWidget {
 
    private slots:
     void Init();
-    void CheckUpdate();
     void SystemInformationInit();
 
     void UpdateCpuBar();
     void UpdateMemoryBar();
     void UpdateDiskBar();
     void UpdateNetworkBar();
-
-    void on_downloadUpdateBtn_clicked();
 
    private:
     std::unique_ptr<Ui::DashboardPage> ui;
