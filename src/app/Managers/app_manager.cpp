@@ -20,8 +20,11 @@ AppManager::AppManager(QObject *parent) : QObject(parent) {
 
     m_themeName = m_settings->value(THEME_PROP, "default").toString();
 
+    // TODO  сейчас файлы перевода лежат прям рядом с бинарем (.qm),  нужно их перенести в папку
+    // translations
     if (m_translator.load(QString("stacer_%1").arg(GetLanguageCode()),
-                          qApp->applicationDirPath() + "/translations")) {
+                          qApp->applicationDirPath() + "")) {
+        //                   qApp->applicationDirPath() + "/translations")) {
         qApp->installTranslator(&m_translator);
     } else {
         qCritical() << "Translator could not load.";
@@ -52,7 +55,7 @@ void AppManager::LoadLanguageList() {
 
     for (int i = 0; i < languages.size(); i++) {
         QJsonObject language = languages.at(i).toObject();
-        m_languageList.insert(language["code"].toString(), language["name"].toString());
+        m_languageList.insert(language["value"].toString(), language["text"].toString());
     }
 }
 
@@ -71,7 +74,6 @@ void AppManager::LoadThemeList() {
 
     for (int i = 0; i < themes.count(); ++i) {
         QJsonObject theme = themes.at(i).toObject();
-
         m_themeList.insert(theme["value"].toString(), theme["text"].toString());
     }
 }

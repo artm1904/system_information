@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Charts Concurrent) 
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Charts Concurrent LinguistTools) 
 
 qt_standard_project_setup()
 
@@ -16,13 +16,20 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "*.h")
 file(GLOB_RECURSE UI_FILES CONFIGURE_DEPENDS "*.ui")
 file(GLOB_RECURSE RESOURCES CONFIGURE_DEPENDS "*.qrc")
 
+# Находим файлы переводов
+file(GLOB TS_FILES CONFIGURE_DEPENDS "translations/*.ts")
 
 qt_add_executable(${PROJECT_NAME}
     ${SOURCES}
     ${HEADERS}
     ${UI_FILES}
-    ${RESOURCES} static.qrc
+    ${RESOURCES}
 )
+
+# Эта команда автоматически скомпилирует .ts файлы в .qm и разместит их
+# в поддиректории 'translations' рядом с исполняемым файлом.
+qt_add_translations(${PROJECT_NAME}
+    TS_FILES ${TS_FILES})
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
