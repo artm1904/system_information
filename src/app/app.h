@@ -8,12 +8,12 @@
 #include <QTextStream>
 #include <memory>
 
+#include "Managers/app_manager.h"
 #include "Pages/Dashboard/dashboard_page.h"
 
-// Предварительное объявление класса, который будет сгенерирован из app.ui
 namespace Ui {
 class App;
-}
+}  // namespace Ui
 
 class MainWindowImpl : public QMainWindow {
     Q_OBJECT
@@ -23,15 +23,17 @@ class MainWindowImpl : public QMainWindow {
     ~MainWindowImpl() override;
 
    private slots:
-    void init();
-    void pageClick(QPushButton *btn, QWidget *w, QString title);
+    void Init();
+    void PageClick(QPushButton *btn, QWidget *w, QString title);
 
     void on_dashBtn_clicked();
 
    private:
-     std::unique_ptr<Ui::App> ui;
+    std::unique_ptr<Ui::App> ui;
 
    private:
+    std::shared_ptr<AppManager> m_appManager;
+
     // Pages
-    DashboardPage *dashboardPage;
+    std::unique_ptr<DashboardPage> m_dashboardPage;
 };

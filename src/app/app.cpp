@@ -7,45 +7,41 @@
 #include "ui_app.h"
 
 MainWindowImpl::MainWindowImpl(QWidget *parent)
-    : QMainWindow(parent), ui(std::make_unique<Ui::App>()) {
-    // Создаем экземпляр страницы. `this` в качестве родителя
-    // гарантирует, что страница будет удалена вместе с главным окном.
-    dashboardPage = new DashboardPage(this);
+    : QMainWindow(parent),
+      ui(std::make_unique<Ui::App>()),
+      m_appManager(AppManager::Instance()),
+      m_dashboardPage(
+          std::make_unique<DashboardPage>(this)) {  // set THIS class how parent for auto delete
 
     ui->setupUi(this);
-
-    init();
+    Init();
 }
-
 
 MainWindowImpl::~MainWindowImpl() = default;
 
-void MainWindowImpl::init() {
-    // 3. Используем современный API для получения геометрии экрана
+void MainWindowImpl::Init() {
+    
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), availableGeometry));
-    // 4. Устанавливаем иконку из ресурсов
+    
     setWindowIcon(QIcon(":/app_icon.png"));
 
-    ui->pageStacked->addWidget(dashboardPage);
+    ui->pageStacked->addWidget(m_dashboardPage.get());
 
     on_dashBtn_clicked();
 }
 
-
-void MainWindowImpl::pageClick(QPushButton *btn, QWidget *w, QString title)
-{
+void MainWindowImpl::PageClick(QPushButton *btn, QWidget *w, QString title) {
     // all button checked false
-    foreach (QPushButton *b, ui->sidebar->findChildren<QPushButton*>())
+    for (QPushButton *b : ui->sidebar->findChildren<QPushButton *>()) {
         b->setChecked(false);
-    btn->setChecked(true); // clicked button set active style
-    
+    }
 
+    btn->setChecked(true);  // clicked button set active style
     ui->pageTitle->setText(title);
     ui->pageStacked->setCurrentWidget(w);
 }
 
-void MainWindowImpl::on_dashBtn_clicked()
-{
-    pageClick(ui->dashBtn, dashboardPage, tr("Dashboard"));
+void MainWindowImpl::on_dashBtn_clicked() {
+    PageClick(ui->dashBtn, m_dashboardPage.get(), tr("Dashboard"));
 }
